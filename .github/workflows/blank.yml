@@ -1,0 +1,79 @@
+name: "Pull Request: CI"
+
+on: [pull_request]
+
+jobs:
+  test:
+    name: Test
+    runs-on: [self-hosted]
+
+    environment:
+      name: Common
+
+    env:
+      COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js v18.18.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      # - name: Get Yarn Cache Directory Path
+      #   id: yarn-cache-dir-path
+      #   run: echo "::set-output name=dir::$(yarn cache dir)"
+      #   uses: actions/cache@v2
+      #   id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+      #   with:
+      #     path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
+
+      - name: RUN NPM Install Yarn
+        run: npm install -g yarn
+
+      - name: RUN Yarn Install
+        # if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --prefer-offline
+
+      # - name: Generate Token
+      #   id: generate_token
+      #   uses: tibdex/github-app-token@v1
+      #   with:
+      #     app_id: ${{ secrets.APP_ID }}
+      #     private_key: ${{ secrets.PRIVATE_KEY }}
+
+      # - name: Eslint Review
+      #   env:
+      #     GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+      #   uses: reviewdog/action-eslint@v1
+      #   with:
+      #     github_token: ${GITHUB_TOKEN}
+      #     reporter: github-pr-review
+      #     eslint_flags: 'src/**/*.{js,jsx,ts,tsx}'
+      #     node_options: '--max_old_space_size=2048'
+
+      # - name: Run Prettier
+      #   run: yarn format
+
+      # - name: Run Eslint
+      #   run: yarn lint
+
+      # - name: Run Jest
+      #   run: yarn test
+
+      # - name: Upload Test Coverage Artifact
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: coverage
+      #     path: coverage
+
+      # - name: Show Coverage In Comments
+      #   uses: ziishaned/jest-reporter-action@v0.0.1
+      #   with:
+      #     github-token: ${GITHUB_TOKEN}
+      #     test-command: "yarn jest --coverage"
